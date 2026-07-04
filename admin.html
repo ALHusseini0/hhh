@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة الأدمن - AloeCare</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+        body { background: #f5fcf9; padding: 20px; min-height: 100vh; }
+        .admin-container { max-width: 1100px; margin: 0 auto; }
+        
+        .admin-header {
+            background: white; border-radius: 40px; padding: 20px 30px;
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;
+            border: 2px solid #1a6b57; margin-bottom: 25px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.05);
+        }
+        .admin-header h1 { color: #0f463b; font-weight: 300; font-size: 1.8rem; }
+        .admin-header h1 span { font-weight: 800; color: #1a8367; }
+        .admin-header .header-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+        .admin-header .header-actions a {
+            text-decoration: none; padding: 10px 22px; border-radius: 60px;
+            font-weight: 600; transition: 0.3s;
+        }
+        .btn-back { background: #c4ddd2; color: #0f463b; }
+        .btn-back:hover { background: #b0d0c3; }
+        .btn-logout { background: #e74c3c; color: white; }
+        .btn-logout:hover { background: #c0392b; }
+
+        .login-screen {
+            max-width: 420px; margin: 50px auto; background: white;
+            border-radius: 50px; padding: 50px 40px;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.1);
+            text-align: center;
+            border: 2px solid #d9eee6;
+        }
+        .login-screen .logo { font-size: 3rem; color: #1a6b57; margin-bottom: 10px; }
+        .login-screen h2 { color: #0f463b; font-weight: 300; font-size: 2rem; margin-bottom: 8px; }
+        .login-screen h2 span { font-weight: 800; color: #1a8367; }
+        .login-screen p { color: #3a7867; margin-bottom: 30px; }
+        .login-screen input {
+            width: 100%; padding: 16px 20px; margin: 10px 0;
+            border: 2px solid #c4ddd2; border-radius: 60px; font-size: 1rem;
+            background: #fafffd; transition: 0.3s;
+        }
+        .login-screen input:focus { border-color: #1a6b57; outline: none; box-shadow: 0 0 0 4px rgba(26,107,87,0.1); }
+        .login-screen .login-btn {
+            width: 100%; padding: 16px; background: #1a6b57; color: white;
+            border: none; border-radius: 60px; font-size: 1.1rem; font-weight: 700;
+            cursor: pointer; transition: 0.3s; margin-top: 16px;
+            box-shadow: 0 8px 24px rgba(26,107,87,0.3);
+        }
+        .login-screen .login-btn:hover { background: #0f5544; transform: scale(1.02); }
+        .login-screen .error-msg { color: #e74c3c; font-weight: 600; margin-top: 12px; display: none; }
+        .login-screen .error-msg.show { display: block; }
+
+        .admin-tabs {
+            display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 25px;
+        }
+        .admin-tabs button {
+            padding: 14px 30px; border: none; border-radius: 60px; font-weight: 700;
+            font-size: 1rem; cursor: pointer; transition: 0.3s;
+            background: white; color: #0f463b; border: 2px solid #c4ddd2;
+            flex: 1; min-width: 140px;
+        }
+        .admin-tabs button:hover { border-color: #1a6b57; }
+        .admin-tabs button.active { background: #1a6b57; color: white; border-color: #1a6b57; box-shadow: 0 8px 24px rgba(26,107,87,0.3); }
+        .admin-tabs button i { margin-left: 8px; }
+
+        .admin-section {
+            background: white; border-radius: 40px; padding: 30px 32px;
+            border: 1px solid #d9eee6; display: none;
+        }
+        .admin-section.active { display: block; }
+        .admin-section h3 { color: #0f463b; font-weight: 300; font-size: 1.8rem; margin-bottom: 20px; }
+        .admin-section h3 i { color: #1a6b57; margin-left: 10px; }
+
+        .product-form {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px;
+        }
+        .product-form .full-width { grid-column: 1 / -1; }
+        .product-form input, .product-form textarea {
+            padding: 14px 18px; border: 2px solid #c4ddd2; border-radius: 30px;
+            font-size: 1rem; background: #fafffd; transition: 0.3s; width: 100%;
+        }
+        .product-form input:focus, .product-form textarea:focus {
+            border-color: #1a6b57; outline: none; box-shadow: 0 0 0 4px rgba(26,107,87,0.1);
+        }
+        .product-form textarea { min-height: 80px; resize: vertical; font-family: inherit; }
+        .product-form .btn-add {
+            padding: 14px 30px; background: #1a6b57; color: white; border: none;
+            border-radius: 60px; font-weight: 700; font-size: 1rem; cursor: pointer;
+            transition: 0.3s; grid-column: 1 / -1;
+        }
+        .product-form .btn-add:hover { background: #0f5544; transform: scale(1.02); }
+
+        .product-list { display: flex; flex-direction: column; gap: 10px; }
+        .product-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 20px; background: #f5fdf9; border-radius: 30px;
+            border: 1px solid #e8f5f0; flex-wrap: wrap; gap: 10px;
+        }
+        .product-item .info { display: flex; align-items: center; gap: 14px; flex: 1; }
+        .product-item .info img { width: 50px; height: 50px; border-radius: 12px; object-fit: cover; border: 2px solid #e8f5f0; }
+        .product-item .info .name { font-weight: 600; color: #0f463b; }
+        .product-item .info .price { color: #0d6b53; font-weight: 700; }
+        .product-item .actions button {
+            padding: 6px 16px; border: none; border-radius: 30px; font-weight: 600; cursor: pointer; transition: 0.2s;
+            background: #e74c3c; color: white;
+        }
+        .product-item .actions button:hover { background: #c0392b; }
+
+        .orders-list { display: flex; flex-direction: column; gap: 12px; max-height: 500px; overflow-y: auto; }
+        .order-item {
+            background: #f5fdf9; border-radius: 30px; padding: 16px 20px;
+            border: 1px solid #e8f5f0; display: flex; justify-content: space-between;
+            align-items: center; flex-wrap: wrap; gap: 10px;
+        }
+        .order-item .details { flex: 1; min-width: 200px; }
+        .order-item .details .name { font-weight: 600; color: #0f463b; }
+        .order-item .details .phone { color: #3a7867; font-size: 0.9rem; }
+        .order-item .details .items { color: #216856; font-size: 0.85rem; }
+        .order-item .details .time { color: #6a9b8a; font-size: 0.75rem; }
+        .order-item .status {
+            padding: 4px 14px; border-radius: 30px; font-size: 0.8rem; font-weight: 600;
+        }
+        .order-item .status.pending { background: #fef9e7; color: #7d6608; }
+        .order-item .status.accepted { background: #d5f5e3; color: #1a6b57; }
+        .order-item .status.rejected { background: #fdedec; color: #922b21; }
+        .order-item .status.delivered { background: #d4e6f1; color: #21618c; }
+        .order-item .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        .order-item .actions button {
+            padding: 6px 18px; border: none; border-radius: 30px; font-weight: 600; cursor: pointer; transition: 0.2s;
+        }
+        .order-item .actions .btn-accept { background: #27ae60; color: white; }
+        .order-item .actions .btn-accept:hover { background: #1e8449; }
+        .order-item .actions .btn-reject { background: #e74c3c; color: white; }
+        .order-item .actions .btn-reject:hover { background: #c0392b; }
+
+        .popup-form input, .popup-form textarea {
+            width: 100%; padding: 14px 18px; margin: 8px 0;
+            border: 2px solid #c4ddd2; border-radius: 30px; font-size: 1rem;
+            background: #fafffd; transition: 0.3s;
+        }
+        .popup-form input:focus, .popup-form textarea:focus {
+            border-color: #1a6b57; outline: none; box-shadow: 0 0 0 4px rgba(26,107,87,0.1);
+        }
+        .popup-form textarea { min-height: 100px; resize: vertical; font-family: inherit; }
+        .popup-form .btn-group { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 12px; }
+        .popup-form .btn-group button {
+            padding: 12px 30px; border: none; border-radius: 60px; font-weight: 700; cursor: pointer; transition: 0.3s;
+        }
+        .popup-form .btn-group .btn-save { background: #1a6b57; color: white; }
+        .popup-form .btn-group .btn-save:hover { background: #0f5544; }
+        .popup-form .btn-group .btn-disable { background: #e74c3c; color: white; }
+        .popup-form .btn-group .btn-disable:hover { background: #c0392b; }
+
+        .popup-status {
+            margin-top: 15px; padding: 12px 20px; border-radius: 30px;
+            font-weight: 600; text-align: center;
+        }
+        .popup-status.active { background: #d5f5e3; color: #1a6b57; }
+        .popup-status.inactive { background: #fdedec; color: #922b21; }
+
+        .review-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 20px; background: #f5fdf9; border-radius: 30px;
+            border: 1px solid #e8f5f0; flex-wrap: wrap; gap: 10px;
+        }
+        .review-item .info .stars { color: #f5b342; font-size: 1.2rem; }
+        .review-item .info .text { color: #0f463b; }
+        .review-item .info .user { color: #3a7867; font-size: 0.85rem; }
+        .review-item .actions button {
+            padding: 6px 16px; border: none; border-radius: 30px; font-weight: 600; cursor: pointer;
+            background: #e74c3c; color: white; transition: 0.2s;
+        }
+        .review-item .actions button:hover { background: #c0392b; }
+
+        .empty-msg { text-align: center; padding: 40px; color: #3a7867; font-size: 1.1rem; }
+        .empty-msg i { font-size: 2.5rem; display: block; margin-bottom: 10px; color: #b8d9cd; }
+        .loading { text-align: center; padding: 30px; color: #3a7867; }
+        .loading i { font-size: 2rem; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .toast {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            padding: 14px 30px; border-radius: 60px; font-weight: 600; color: white;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.2); z-index: 9999;
+            animation: slideUp 0.5s ease; display: none;
+        }
+        .toast.success { background: #27ae60; }
+        .toast.error { background: #e74c3c; }
+        .toast.info { background: #2980b9; }
+        @keyframes slideUp {
+            0% { transform: translateX(-50%) translateY(30px); opacity: 0; }
+            100% { transform: translateX(-50%) translateY(0); opacity: 1; }
+        }
+
+        .hidden { display: none !important; }
+
+        @media (max-width: 700px) {
+            .product-form { grid-template-columns: 1fr; }
+            .admin-header { flex-direction: column; text-align: center; }
+            .admin-tabs button { min-width: 100%; }
+            .order-item { flex-direction: column; align-items: stretch; }
+            .product-item { flex-direction: column; align-items: stretch; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ====== شاشة تسجيل الدخول ====== -->
+<div id="loginScreen" class="login-screen">
+    <div class="logo"><i class="fas fa-shield-alt"></i></div>
+    <h2>Aloe<span>Care</span></h2>
+    <p>🔐 لوحة تحكم الأدمن</p>
+    <input type="text" id="adminUsername" placeholder="👤 اسم المستخدم" value="Aloecarehgjh5874">
+    <input type="password" id="adminPassword" placeholder="🔑 كلمة السر" value="222538DG">
+    <button class="login-btn" id="loginBtn"><i class="fas fa-sign-in-alt"></i> دخول</button>
+    <div class="error-msg" id="errorMsg">❌ اسم المستخدم أو كلمة السر غير صحيحة</div>
+    <a href="index.html" style="display:inline-block; margin-top:20px; color:#1a6b57; text-decoration:none; font-weight:500;">↩ العودة للموقع</a>
+</div>
+
+<!-- ====== لوحة التحكم ====== -->
+<div id="adminPanel" class="admin-container hidden">
+    <div class="admin-header">
+        <h1><i class="fas fa-cog" style="color:#1a6b57;"></i> Aloe<span>Care</span> <span style="font-size:0.7rem; font-weight:300; color:#3a7867;">لوحة الأدمن</span></h1>
+        <div class="header-actions">
+            <a href="index.html" class="btn-back"><i class="fas fa-arrow-right"></i> الموقع</a>
+            <a href="#" class="btn-logout" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> خروج</a>
+        </div>
+    </div>
+
+    <div class="admin-tabs">
+        <button class="active" data-tab="products"><i class="fas fa-seedling"></i> المنتجات</button>
+        <button data-tab="orders"><i class="fas fa-clipboard-list"></i> الطلبات</button>
+        <button data-tab="popup"><i class="fas fa-bullhorn"></i> الإعلان</button>
+        <button data-tab="reviews"><i class="fas fa-star"></i> التقييمات</button>
+    </div>
+
+    <!-- المنتجات -->
+    <div id="tab-products" class="admin-section active">
+        <h3><i class="fas fa-seedling"></i> إدارة المنتجات</h3>
+        <div class="product-form">
+            <input type="text" id="productName" placeholder="📦 اسم المنتج">
+            <input type="number" id="productPrice" placeholder="💰 السعر (جنيه)">
+            <input type="text" id="productImage" placeholder="🖼️ رابط الصورة" class="full-width">
+            <textarea id="productDesc" placeholder="📝 وصف المنتج" class="full-width"></textarea>
+            <button class="btn-add" id="addProductBtn"><i class="fas fa-plus"></i> إضافة منتج</button>
+        </div>
+        <h4 style="color:#0f463b; margin-bottom:15px;">📦 المنتجات الحالية</h4>
+        <div class="product-list" id="productList"><div class="loading"><i class="fas fa-spinner"></i> جاري التحميل...</div></div>
+    </div>
+
+    <!-- الطلبات -->
+    <div id="tab-orders" class="admin-section">
+        <h3><i class="fas fa-clipboard-list"></i> إدارة الطلبات</h3>
+        <div class="orders-list" id="ordersList"><div class="loading"><i class="fas fa-spinner"></i> جاري التحميل...</div></div>
+    </div>
+
+    <!-- الإعلان -->
+    <div id="tab-popup" class="admin-section">
+        <h3><i class="fas fa-bullhorn"></i> الإعلان المنبثق</h3>
+        <div class="popup-form">
+            <input type="text" id="popupTitle" placeholder="📢 عنوان الإعلان">
+            <input type="text" id="popupImage" placeholder="🖼️ رابط صورة الإعلان">
+            <textarea id="popupDesc" placeholder="📝 وصف الإعلان"></textarea>
+            <div class="btn-group">
+                <button class="btn-save" id="savePopupBtn"><i class="fas fa-save"></i> حفظ</button>
+                <button class="btn-disable" id="disablePopupBtn"><i class="fas fa-ban"></i> تعطيل</button>
+            </div>
+        </div>
+        <div class="popup-status" id="popupStatus">⏳ جاري التحميل...</div>
+    </div>
+
+    <!-- التقييمات -->
+    <div id="tab-reviews" class="admin-section">
+        <h3><i class="fas fa-star"></i> إدارة التقييمات</h3>
+        <div id="reviewsList"><div class="loading"><i class="fas fa-spinner"></i> جاري التحميل...</div></div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-analytics.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+import { getFirestore, collection, addDoc, query, getDocs, orderBy, serverTimestamp, deleteDoc, doc, updateDoc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyA6GcUjfR8Kk6R7QYaiWiwGRJJeiniWukU",
+    authDomain: "oooo-cea90.firebaseapp.com",
+    projectId: "oooo-cea90",
+    storageBucket: "oooo-cea90.firebasestorage.app",
+    messagingSenderId: "678881106852",
+    appId: "1:678881106852:web:7f95d1842dbb5455b8bf31",
+    measurementId: "G-N4PSX6JCBX"
+};
+
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const ADMIN_USERNAME = "Aloecarehgjh5874";
+const ADMIN_PASSWORD = "222538DG";
+
+// ====== عناصر ======
+const loginScreen = document.getElementById('loginScreen');
+const adminPanel = document.getElementById('adminPanel');
+const errorMsg = document.getElementById('errorMsg');
+
+// ====== Toast ======
+function showToast(message, type = 'success') {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.className = `toast ${type}`;
+    toast.style.display = 'block';
+    setTimeout(() => { toast.style.display = 'none'; }, 3000);
+}
+
+// ====== تسجيل الدخول ======
+document.getElementById('loginBtn').addEventListener('click', function() {
+    const username = document.getElementById('adminUsername').value.trim();
+    const password = document.getElementById('adminPassword').value.trim();
+
+    if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+        localStorage.setItem('aloe_admin', 'true');
+        loginScreen.classList.add('hidden');
+        adminPanel.classList.remove('hidden');
+        loadAllData();
+        showToast('✅ مرحباً بك في لوحة التحكم', 'success');
+    } else {
+        errorMsg.classList.add('show');
+        setTimeout(() => errorMsg.classList.remove('show'), 4000);
+    }
+});
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') document.getElementById('loginBtn').click();
+});
+
+// ====== خروج ======
+document.getElementById('logoutBtn').addEventListener('click', function(e) {
+    e.preventDefault();
+    localStorage.removeItem('aloe_admin');
+    loginScreen.classList.remove('hidden');
+    adminPanel.classList.add('hidden');
+    showToast('👋 تم تسجيل الخروج', 'info');
+});
+
+// ====== التحقق من الجلسة ======
+if (localStorage.getItem('aloe_admin') === 'true') {
+    loginScreen.classList.add('hidden');
+    adminPanel.classList.remove('hidden');
+    loadAllData();
+}
+
+// ====== التبويبات ======
+document.querySelectorAll('.admin-tabs button').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('.admin-tabs button').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+        document.getElementById('tab-' + this.dataset.tab).classList.add('active');
+    });
+});
+
+// ====== تحميل البيانات ======
+async function loadAllData() {
+    await loadProducts();
+    await loadOrders();
+    await loadPopup();
+    await loadReviews();
+}
+
+// ====== المنتجات ======
+async function loadProducts() {
+    try {
+        const snap = await getDocs(collection(db, "products"));
+        const products = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderProducts(products);
+    } catch(e) {
+        document.getElementById('productList').innerHTML = `<div class="empty-msg"><i class="fas fa-exclamation-triangle"></i>خطأ في التحميل</div>`;
+    }
+}
+
+function renderProducts(products) {
+    const container = document.getElementById('productList');
+    if (!products || products.length === 0) {
+        container.innerHTML = `<div class="empty-msg"><i class="fas fa-seedling"></i>لا توجد منتجات</div>`;
+        return;
+    }
+    let html = '';
+    products.forEach(p => {
+        html += `
+            <div class="product-item">
+                <div class="info">
+                    <img src="${p.image || 'https://via.placeholder.com/50x50?text=Aloe'}" onerror="this.src='https://via.placeholder.com/50x50?text=Aloe'">
+                    <span class="name">${p.name}</span>
+                    <span class="price">${p.price || 0} ج</span>
+                    ${p.desc ? `<span style="color:#3a7867;font-size:0.8rem;">${p.desc}</span>` : ''}
+                </div>
+                <div class="actions">
+                    <button data-id="${p.id}"><i class="fas fa-trash"></i> حذف</button>
+                </div>
+            </div>
+        `;
+    });
+    container.innerHTML = html;
+    container.querySelectorAll('.actions button').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            if (!confirm('حذف المنتج؟')) return;
+            try {
+                await deleteDoc(doc(db, "products", this.dataset.id));
+                showToast('✅ تم الحذف', 'success');
+                loadProducts();
+            } catch(e) { showToast('❌ خطأ: ' + e.message, 'error'); }
+        });
+    });
+}
+
+document.getElementById('addProductBtn').addEventListener('click', async function() {
+    const name = document.getElementById('productName').value.trim();
+    const price = parseFloat(document.getElementById('productPrice').value);
+    const image = document.getElementById('productImage').value.trim();
+    const desc = document.getElementById('productDesc').value.trim();
+    if (!name || !price) { showToast('⚠️ أدخل الاسم والسعر', 'error'); return; }
+    try {
+        await addDoc(collection(db, "products"), {
+            name, price,
+            image: image || 'https://via.placeholder.com/280x170?text=AloeCare',
+            desc: desc || '',
+            timestamp: serverTimestamp()
+        });
+        showToast('✅ تم الإضافة', 'success');
+        document.getElementById('productName').value = '';
+        document.getElementById('productPrice').value = '';
+        document.getElementById('productImage').value = '';
+        document.getElementById('productDesc').value = '';
+        loadProducts();
+    } catch(e) { showToast('❌ خطأ: ' + e.message, 'error'); }
+});
+
+// ====== الطلبات ======
+async function loadOrders() {
+    try {
+        const snap = await getDocs(query(collection(db, "orders"), orderBy("timestamp", "desc")));
+        const orders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderOrders(orders);
+    } catch(e) {
+        document.getElementById('ordersList').innerHTML = `<div class="empty-msg"><i class="fas fa-exclamation-triangle"></i>خطأ في التحميل</div>`;
+    }
+}
+
+function renderOrders(orders) {
+    const container = document.getElementById('ordersList');
+    if (!orders || orders.length === 0) {
+        container.innerHTML = `<div class="empty-msg"><i class="fas fa-clipboard-list"></i>لا توجد طلبات</div>`;
+        return;
+    }
+    let html = '';
+    orders.forEach(o => {
+        const status = o.status || 'قيد التوصيل 🚚';
+        let statusClass = 'pending';
+        if (status.includes('قبول') || status.includes('✅')) statusClass = 'accepted';
+        else if (status.includes('رفض') || status.includes('❌')) statusClass = 'rejected';
+        else if (status.includes('تم التوصيل')) statusClass = 'delivered';
+        const time = o.timestamp?.toDate ? o.timestamp.toDate().toLocaleString('ar-EG') : '';
+        const itemsStr = o.items?.map(i => i.name || i).join('، ') || '-';
+        html += `
+            <div class="order-item">
+                <div class="details">
+                    <div class="name">${o.name || 'مجهول'}</div>
+                    <div class="phone"><i class="fas fa-phone"></i> ${o.phone || '-'}</div>
+                    <div class="items">🛒 ${itemsStr}</div>
+                    <div class="time">🕐 ${time}</div>
+                    ${o.address ? `<div style="font-size:0.8rem;color:#2980b9;">📍 ${o.address}</div>` : ''}
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                    <span class="status ${statusClass}">${status}</span>
+                    ${status === 'قيد التوصيل 🚚' ? `
+                        <div class="actions">
+                            <button class="btn-accept" data-id="${o.id}">قبول</button>
+                            <button class="btn-reject" data-id="${o.id}">رفض</button>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+    });
+    container.innerHTML = html;
+    container.querySelectorAll('.btn-accept').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            try {
+                await updateDoc(doc(db, "orders", this.dataset.id), { status: 'تم القبول ✅' });
+                showToast('✅ تم القبول', 'success');
+                loadOrders();
+            } catch(e) { showToast('❌ خطأ: ' + e.message, 'error'); }
+        });
+    });
+    container.querySelectorAll('.btn-reject').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            if (!confirm('رفض الطلب؟')) return;
+            try {
+                await updateDoc(doc(db, "orders", this.dataset.id), { status: 'مرفوض ❌' });
+                showToast('❌ تم الرفض', 'info');
+                loadOrders();
+            } catch(e) { showToast('❌ خطأ: ' + e.message, 'error'); }
+        });
+    });
+}
+
+// ====== الإعلان ======
+async function loadPopup() {
+    try {
+        const snap = await getDoc(doc(db, "settings", "popup"));
+        const data = snap.exists() ? snap.data() : { active: true, title: '🎉 عرض خاص!', image: '', desc: 'خصم 20% على أول طلب!' };
+        document.getElementById('popupTitle').value = data.title || '';
+        document.getElementById('popupImage').value = data.image || '';
+        document.getElementById('popupDesc').value = data.desc || '';
+        updatePopupStatus(data.active);
+    } catch(e) { console.error(e); }
+}
+
+function updatePopupStatus(active) {
+    const el = document.getElementById('popupStatus');
+    el.textContent = active ? '✅ الإعلان مفعل' : '⛔ الإعلان معطل';
+    el.className = `popup-status ${active ? 'active' : 'inactive'}`;
+}
+
+document.getElementById('savePopupBtn').addEventListener('click', async function() {
+    const title = document.getElementById('popupTitle').value.trim() || '🎉 عرض خاص!';
+    const image = document.getElementById('popupImage').value.trim();
+    const desc = document.getElementById('popupDesc').value.trim() || 'خصم 20% على أول طلب!';
+    try {
+        await setDoc(doc(db, "settings", "popup"), {
+            active: true, title, image, desc, updatedAt: serverTimestamp()
+        });
+        showToast('✅ تم حفظ الإعلان', 'success');
+        updatePopupStatus(true);
+    } catch(e) { showToast('❌ خطأ: ' + e.message, 'error'); }
+});
+
+document.getElementById('disablePopupBtn').addEventListener('click', async function() {
+    try {
+        await setDoc(doc(db, "settings", "popup"), { active: false }, { merge: true });
+        showToast('⛔ تم تعطيل الإعلان', 'info');
+        updatePopupStatus(false);
+    } catch(e) { showToast('❌ خطأ: ' + e.message, 'error'); }
+});
+
+// ====== التقييمات ======
+async function loadReviews() {
+    try {
+        const snap = await getDocs(query(collection(db, "reviews"), orderBy("timestamp", "desc")));
+        const reviews = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderReviews(reviews);
+    } catch(e) {
+        document.getElementById('reviewsList').innerHTML = `<div class="empty-msg"><i class="fas fa-exclamation-triangle"></i>خطأ في التحميل</div>`;
+    }
+}
+
+function renderReviews(reviews) {
+    const container = document.getElementById('reviewsList');
+    if (!reviews || reviews.length === 0) {
+        container.innerHTML = `<div class="empty-msg"><i class="fas fa-star"></i>لا توجد تقييمات</div>`;
+        return;
+    }
+    let html = '';
+    reviews.forEach(r => {
+        const stars = '★'.repeat(Math.min(r.rating || 0, 5)) + '☆'.repeat(Math.max(5 - (r.rating || 0), 0));
+        html += `
+            <div class="review-item">
+                <div class="info">
+                    <div class="stars">${stars}</div>
+                    <div class="text">${r.text || ''}</div>
+                    <div class="user">👤 ${r.userName || 'مستخدم'}</div>
+                </div>
+                <div class="actions">
+                    <button data-id="${r.id}"><i class="fas fa-trash"></i> حذف</button>
+                </div>
+            </div>
+        `;
+    });
+    container.innerHTML = html;
+    container.querySelectorAll('.actions button').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            if (!confirm('حذف التقييم؟')) return;
+            try {
+                await deleteDoc(doc(db, "reviews", this.dataset.id));
+                showToast('✅ تم الحذف', 'success');
+                loadReviews();
+            } catch(e) { showToast('❌ خطأ: ' + e.message, 'error'); }
+        });
+    });
+}
+
+// ====== تحديث تلقائي ======
+onSnapshot(collection(db, "products"), () => { if (!loginScreen.classList.contains('hidden')) return; loadProducts(); });
+onSnapshot(collection(db, "orders"), () => { if (!loginScreen.classList.contains('hidden')) return; loadOrders(); });
+onSnapshot(collection(db, "reviews"), () => { if (!loginScreen.classList.contains('hidden')) return; loadReviews(); });
+
+console.log("✅ لوحة الأدمن جاهزة");
+console.log("👤 اسم المستخدم: Aloecarehgjh5874");
+console.log("🔑 كلمة السر: 222538DG");
+</script>
+</body>
+</html>
